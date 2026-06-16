@@ -17,9 +17,12 @@ def _get_allowed_origins() -> list[str]:
     Supports:
     - ALLOWED_ORIGINS="https://a.com,http://localhost:3000"
     - FRONTEND_URL="http://localhost:3000" as a fallback
+    - ALLOWED_ORIGINS="*" to explicitly allow any origin (use with caution)
     """
     allowed = os.getenv("ALLOWED_ORIGINS", "").strip()
     if allowed:
+        if allowed == "*":
+            return ["*"]
         return [o.strip() for o in allowed.split(",") if o.strip()]
 
     frontend_url = os.getenv("FRONTEND_URL", "").strip()
@@ -27,7 +30,13 @@ def _get_allowed_origins() -> list[str]:
         return [frontend_url]
 
     # Safe dev default (matches plan requirement: allow frontend on :3000)
-    return ["http://localhost:3000"]
+    return [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        # Vite default port (in case configuration changes)
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
 
 openapi_tags = [
